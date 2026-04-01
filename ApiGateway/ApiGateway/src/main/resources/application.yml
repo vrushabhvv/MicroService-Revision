@@ -1,2 +1,32 @@
 server:
   port: 8084
+
+#Api Gateway configuration
+spring:
+  cloud:
+    gateway:
+      routes:
+        - id: USERSERVICE
+          uri: lb://USERSERVICE #lb is loadBalancer
+          predicates:
+            - Path=/user/**     #any uri starting with  /user/anything that will call user service
+
+        - id: HOTELSERVICE
+          uri: lb://HOTELSERVICE
+          predicates:
+            - Path=/hotel/**,/staffs/**
+
+
+        - id: RATINGSERVICE
+          uri: lb://RATINGSERVICE
+          predicates:
+            - Path=/rating/**
+
+eureka:
+  instance:
+    prefer-ip-address: true
+  client:
+    fetch-registry: true
+    register-with-eureka: true
+    service-url:
+      defaultZone: http://localhost:8761/eureka
