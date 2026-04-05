@@ -17,14 +17,18 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.MySQL8Dialect #somtime dialect will be auto detected with url provided above, but it can give error sometime, so add explicitly
 
-eureka:
-  instance:
-    prefer-ip-address: true
-  client:
-    fetch-registry: true
-    register-with-eureka: true
-    service-url:
-      defaultZone: http://localhost:8761/eureka
+  config:
+    import: "optional:configserver:http://localhost:8085/"
+
+#commented below configuration, because we are fetching the configuration from git server
+#eureka:
+#  instance:
+#    prefer-ip-address: true
+#  client:
+#    fetch-registry: true
+#    register-with-eureka: true
+#    service-url:
+#      defaultZone: http://localhost:8761/eureka
 
 #Gemini said Explanation of eureka configuration
 #This configuration tells your UserService exactly how to behave within your microservices network.
@@ -61,3 +65,49 @@ eureka:
 #It sees register-with-eureka: true and sends its IP (prefer-ip-address: true) to http://localhost:8761/eureka.
 #
 #It sees fetch-registry: true and pulls down the list of all other services (like RATING-SERVICE) so it’s ready to communicate.
+
+
+
+#ciruit breaker configuration
+#actuator
+management:
+  health:
+    circuitbreakers:
+      enabled: true
+  endpoints:
+    web:
+      exposure:
+        include: health #exposed health endpoint, if you want all endpoint then add **
+
+  endpoint:
+    health:
+      show-details: always
+
+
+#resilience4j
+resilience4j:
+  circuitbreaker:
+    instances:
+      ratingHotelBreaker: #this is circuit breaker name provided in handler method
+        registerHealthIndicator: true
+        evenConsumerBufferSize: 10
+        failureRateThreshold: 50
+        minimumNumberOfCalls: 5
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+        waitDurationInOpenState: 6s
+        permittedNumberOfCallsInHalfOpenState: 3
+        slidingWindowSize: 10
+        slidingWindowType: COUNT_BASED
+
+  retry:
+    instances:
+      ratingHotelService:
+        max-attempts: 2
+        wait-duration: 5s
+
+  ratelimiter:
+    instances:
+      userRateLimiter:
+        limit-refresh-period: 1s
+        limit-for-period: 2
+        timeout-duration: 0s
