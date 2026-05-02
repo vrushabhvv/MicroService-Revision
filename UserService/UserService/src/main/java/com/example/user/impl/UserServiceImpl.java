@@ -53,7 +53,7 @@ public class UserServiceImpl implements UserService {
                 new ResourceNotFoundException("User not found for given userId " + userId)
         );
         //we need to fetch what are the rating provided from this user,establish
-        // connection between USERSERVICE and RATINGSERVIC
+        // connection between USERSERVICE and RATINGSERVE
 
         Rating[] ratingsOfUser = restTemplate.getForObject("http://RATINGSERVICE/rating/user/dd3daa71-d590-4518-a942-0f2b73893362".trim(),
                 Rating[].class);
